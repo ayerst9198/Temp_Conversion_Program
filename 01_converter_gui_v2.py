@@ -1,8 +1,16 @@
-from tkinter import *
+import tkinter
+
 
 class Converter:
 
     def __init__(self):
+
+        # Initialise variables (such as the feedback variable)
+        self.var_feedback = StringVar()
+        self.var_feedback.set("")
+
+        self.var_has_error = StringVar()
+        self.var_has_error.set("no")
 
         # common format for all buttons
         # Arial size 14 bold, with white text
@@ -35,11 +43,11 @@ class Converter:
         self.temp_entry.grid(row=2, padx=10, pady=10)
 
         error = "Please enter a number"
-        self.temp_error = Label(self.temp_frame, text="",
-                                fg="#9C0000")
-        self.temp_error.grid(row=3)
+        self.output_label = Label(self.temp_frame, text="",
+                                  fg="#9C0000")
+        self.output_label.grid(row=3)
 
-        #Conversion, help and history / export buttons
+        # Conversion, help and history / export buttons
         self.button_frame = Frame(self.temp_frame)
         self.button_frame.grid(row=4)
 
@@ -51,12 +59,13 @@ class Converter:
                                         command=self.to_celsius)
         self.to_celsius_button.grid(row=0, column=0, padx=5, pady=5)
 
-        self.to_farenheit_button = Button(self.button_frame,
-                                        text="To Farenheit F",
-                                        bg="#009900",
-                                        fg=button_fg,
-                                        font=button_font, width=12)
-        self.to_farenheit_button.grid(row=0, column=1, padx=5, pady=5)
+        self.to_fahrenheit_button = Button(self.button_frame,
+                                           text="To Fahrenheit F",
+                                           bg="#009900",
+                                           fg=button_fg,
+                                           font=button_font, width=12,
+                                           command=self.to_fahrenheit)
+        self.to_fahrenheit_button.grid(row=0, column=1, padx=5, pady=5)
 
         self.to_help_info_button = Button(self.button_frame,
                                           text="Help / Info",
@@ -66,21 +75,23 @@ class Converter:
         self.to_help_info_button.grid(row=1, column=0, padx=5, pady=5)
 
         self.to_history_export_button = Button(self.button_frame,
-                                          text="History / Export",
-                                          bg="#004C99",
-                                          fg=button_fg,
-                                          font=button_font, width=12,
+                                               text="History / Export",
+                                               bg="#004C99",
+                                               fg=button_fg,
+                                               font=button_font, width=12,
                                                state=DISABLED)
         self.to_history_export_button.grid(row=1, column=1, padx=5, pady=5)
 
+    # checks user input and if its valid, converts temp
     def check_temp(self, min_value):
 
         has_error = "no"
         error = "Please enter a number that is more " \
                 "than {}".format(min_value)
 
+        response = self.temp_entry.get()
+
         try:
-            response = self.temp_entry.get()
             response = float(response)
 
             if response < min_value:
@@ -89,23 +100,62 @@ class Converter:
         except ValueError:
             has_error = "yes"
 
-        # If the number is invalid, display error message
-        if has_error == "yes":
-            self.temp_error.config(text=error, fg="#9C0000")
-        else:
-            self.temp_error.config(text="You are OK", fg="blue")
+        # sets var_has_error so that the entry box and
+        # labels can be correctly formatted by formatting function
 
-            # if we have at least one valid calculation
-            # enable history/export button
+        if has_error == "yes":
+            self.var_has_error.set("yes")
+            self.var_feedback.set(error)
+            return "invalid"
+
+        # If we have no errors..
+        else:
+            # set to 'no' in case of previous errors
+            self.var_has_error.set("no")
+
+            # return number to be
+            # converted and enable history button
             self.to_history_export_button.config(state=NORMAL)
+            return response
 
     # check temp os more than -459 and convert it
     def to_celsius(self):
+        to_convert = self.check_temp(-459)
 
-        self.check_temp(-459)
+        if to_convert != "invalid":
+            # do calculation
+            self.var_feedback.set("Converting {} to "
+                                  "C :".format(to_convert))
+        self.output_answer()
 
+    # check temperature is more than -273 and convert it
+    def to_fahrenheit(self):
+        to_convert = self.check_temp(-273)
 
+        if to_convert != "invalid":
+            # do calculation
+            self.var_feedback.set("Converting {} to "
+                                  "F :".format(to_convert))
+        self.output_answer()
 
+    # shows user output and clears entry widget
+    # ready for next calculation
+    def output_answer(self):
+        print("showing output")
+        output = self.var_feedback.get()
+        has_errors = self.var_has_error.get()
+        print("has errors", has_errors)
+
+        if has_errors == "yes":
+            # red text, pink entry box
+            self.output_label.config(fg="#9C0000")
+            self.temp_entry.config(bg="#F8CECC")
+
+        else:
+            self.output_label.config(fg="#004C00")
+            self.temp_entry.config(bg="#FFFFFF")
+
+        self.output_label.config(text=output)
 
 
 # main routine
