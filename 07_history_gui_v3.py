@@ -42,7 +42,7 @@ class Converter:
         self.to_history_button.config(state=NORMAL)
 
     def to_history(self):
-        HistoryExport(self)
+        HistoryExport(self, self.all_calculations)
 
 
 class HistoryExport:
@@ -206,7 +206,7 @@ class HistoryExport:
 
         else:
             # check that filename is valid
-            filename_ok = self.check_filename()
+            filename_ok = self.check_filename(filename)
 
         if filename_ok == "":
             filename += ".txt"
