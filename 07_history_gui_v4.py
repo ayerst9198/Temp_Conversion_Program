@@ -63,10 +63,9 @@ class HistoryExport:
 
         # Function converts contents of calculation list
         # into a string
+        self.var_calc_string = StringVar()
         calc_string_text = self.get_calc_string(calc_list)
-
-        # setup dialogue box and background colour
-        background = "#ffe6cc"
+        self.var_calc_string.set(calc_string_text)
 
         self.history_box = Toplevel()
 
@@ -195,32 +194,51 @@ class HistoryExport:
 
         return calc_string
 
-    def make_file(self):
-        # retrieve filename
-        filename = self.filename_entry.get()
+    def export_file(self, filename):
 
+        # writes data to file
+        write_date = "Generated: {}".format(self.get_date())
+
+        calc_history_write = "Here is your calculation history: \n" \
+                             "{}".format(self.var_calc_string.get())
+
+        heading = "***** Calculation History ****"
+
+        export_list = [heading, write_date, calc_history_write]
+
+        text_file = open(filename, "w+")
+
+        for item in export_list:
+            text_file.write(item)
+            text_file.write("\n\n")
+
+        text_file.close()
+
+    def make_file(self):
+
+        filename = self.filename_entry.get()
         filename_ok = ""
 
         if filename == "":
-            filename += ".txt"
-            success = "Success! Your calculation history has " \
-                      "been saved as {}".format(filename)
-            self.var_filename.set(filename)
-            self.filename_feedback_label.config(text=success,
-                                                fg="dark green")
-            self.filename_entry.config(gb="FFFFFF")
+            date_part = self.get_date()
+            filename = "{}_temperature_calculations".format(date_part)
 
         else:
-            self.filename_feedback_label.config(text=filename_ok,
-                                                fg="dark red")
-            self.filename_entry.config(bg="#F8CECC")
+            filename_ok = self.check_filename(filename)
 
         if filename_ok == "":
             filename += ".txt"
-            self.filename_feedback_label.config(text="You are OK")
+
+            self.filename_entry.config(bg="light green")
+
+            self.filename_feedback_label.config(text="File Exported",
+                                                fg="dark green")
+            self.export_file(filename)
 
         else:
-            self.filename_feedback_label.config(text=filename_ok)
+            self.filename_entry.config(bg="dark red")
+            self.filename_feedback_label.config(text=filename_ok,
+                                                fg="#9C0000")
 
     def get_date(self):
         today = date.today()
